@@ -1,9 +1,11 @@
 package ca.mcgill.ecse420.a1;
+	
+import java.util.concurrent.*;
 
 public class MatrixMultiplication {
-	
-	private static final int NUMBER_THREADS = 1;
-	private static final int MATRIX_SIZE = 9;
+
+	private static final int MATRIX_SIZE = 8;
+	private static final int NUMBER_THREADS = MATRIX_SIZE;
 
 	public static void main(String[] args) {
 	
@@ -11,10 +13,12 @@ public class MatrixMultiplication {
 	double[][] a = generateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE);
 	double[][] b = generateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE);
 
-	executionTime(a, b, true);
+
+	//executionTime(a, b, true);
+	executionTime(a, b, false);
 
 	//printMatrix(sequentialMultiplyMatrix(a, b));
-	// parallelMultiplyMatrix(a, b);
+	//printMatrix(parallelMultiplyMatrix(a, b));
 
 	}
 	
@@ -47,7 +51,7 @@ public class MatrixMultiplication {
 	
 
 	/**
-	 * Question 1.2
+	 * Question 1.2 (Thread Pool)
 	 * Returns the result of a concurrent matrix multiplication
 	 * The two matrices are randomly generated
 	 * @param a is the first matrix
@@ -55,9 +59,49 @@ public class MatrixMultiplication {
 	 * @return the result of the multiplication
 	 * */
 	public static double[][] parallelMultiplyMatrix(double[][] a, double[][] b) {
-		System.out.println("in parallel ;)");
-		return null;
+		// result matrix
+		// reference for every task object
+		double[][] resultMatrix = new double[MATRIX_SIZE][MATRIX_SIZE];
 
+		// initialize thread pool 
+		ExecutorService executor = Executors.newFixedThreadPool(NUMBER_THREADS);
+
+		// create threads
+		for (int rowCount = 0; rowCount < MATRIX_SIZE; rowCount++) {
+			executor.execute(new CalculateMatrixMultiplicationRow(a, b, rowCount, resultMatrix));
+		}
+
+		executor.shutdown();
+
+		return resultMatrix;
+	}
+
+
+	// Task class for thread pool
+	public static class CalculateMatrixMultiplicationRow implements Runnable {
+		// each thread divides the work by calculating a row for the result matrix
+		private double[][] a;
+		private double[][] b;
+		private int row;// result row number and row number from matrix a (do not iterate this amount of times)
+		private int columns; // to iterate through the columns in matrix b
+		private double[][] resultMatrix; 
+
+		public CalculateMatrixMultiplicationRow(double[][] a, double[][] b, int row, double[][] resultMatrix) {
+			this.a = a;
+			this.b = b;
+			this.row = row;
+			this.resultMatrix = resultMatrix;
+		}
+
+		// calculates the desired result row
+		public void run() {
+			for (int col = 0; col < MATRIX_SIZE; col++) {
+				for (int helperCount = 0; helperCount < MATRIX_SIZE; helperCount++) {
+					// row never changes
+					this.resultMatrix[this.row][col] += this.a[this.row][helperCount] * this.b[helperCount][col];
+				}
+			}
+		}
 	}
 
 
@@ -140,8 +184,7 @@ public class MatrixMultiplication {
 		// results
 			executionTime = (endTime - startTime) / 1000000000.0; // convert nanoseconds to seconds
 		// print final results
-		System.out.printf("time to run %s: %f seconds\n",  methodName, executionTime);
-
+		System.out.printf("time to run %s with square matrix of size %d: %f seconds\n",  methodName, MATRIX_SIZE,  executionTime);
 	}
 
 
