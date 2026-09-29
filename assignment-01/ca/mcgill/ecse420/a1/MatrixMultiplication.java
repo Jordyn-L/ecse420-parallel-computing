@@ -1,11 +1,14 @@
 package ca.mcgill.ecse420.a1;
+// print threads doing what with ids
+// use is terminated with shutdown
+
 	
 import java.util.concurrent.*;
 
 public class MatrixMultiplication {
 
-	private static final int MATRIX_SIZE = 8;
-	private static final int NUMBER_THREADS = MATRIX_SIZE;
+	private static final int NUMBER_THREADS = 8;
+	private static final int MATRIX_SIZE = 200;
 
 	public static void main(String[] args) {
 	
@@ -15,7 +18,7 @@ public class MatrixMultiplication {
 
 
 	//executionTime(a, b, true);
-	executionTime(a, b, false);
+	//executionTime(a, b, false);
 
 	//printMatrix(sequentialMultiplyMatrix(a, b));
 	//printMatrix(parallelMultiplyMatrix(a, b));
@@ -59,19 +62,22 @@ public class MatrixMultiplication {
 	 * @return the result of the multiplication
 	 * */
 	public static double[][] parallelMultiplyMatrix(double[][] a, double[][] b) {
-		// result matrix
+
 		// reference for every task object
 		double[][] resultMatrix = new double[MATRIX_SIZE][MATRIX_SIZE];
-
-		// initialize thread pool 
+ 
+		// re-use threads to complete the tasks
 		ExecutorService executor = Executors.newFixedThreadPool(NUMBER_THREADS);
 
-		// create threads
+		// create Tasks for each row
 		for (int rowCount = 0; rowCount < MATRIX_SIZE; rowCount++) {
 			executor.execute(new CalculateMatrixMultiplicationRow(a, b, rowCount, resultMatrix));
 		}
 
+		// stop accepting new tasks
 		executor.shutdown();
+		// wait for execution to wrap up after shutdown
+		while (!executor.isTerminated()) { }
 
 		return resultMatrix;
 	}
@@ -95,12 +101,18 @@ public class MatrixMultiplication {
 
 		// calculates the desired result row
 		public void run() {
+			// for testing
+			System.out.println("Processing row " + this.row + " on " + Thread.currentThread().getName());
+
 			for (int col = 0; col < MATRIX_SIZE; col++) {
 				for (int helperCount = 0; helperCount < MATRIX_SIZE; helperCount++) {
 					// row never changes
 					this.resultMatrix[this.row][col] += this.a[this.row][helperCount] * this.b[helperCount][col];
+					
 				}
+				
 			}
+			
 		}
 	}
 
@@ -183,8 +195,16 @@ public class MatrixMultiplication {
 
 		// results
 			executionTime = (endTime - startTime) / 1000000000.0; // convert nanoseconds to seconds
+			
 		// print final results
-		System.out.printf("time to run %s with square matrix of size %d: %f seconds\n",  methodName, MATRIX_SIZE,  executionTime);
+		int threadAmount;
+		if (!sequential) {
+			threadAmount = NUMBER_THREADS;
+		}
+		else {
+			threadAmount = 1;
+		}
+		System.out.printf("time to run %s with square matrix of size %d and %d threads: %f seconds\n", methodName, MATRIX_SIZE, threadAmount,  executionTime);
 	}
 
 
