@@ -29,7 +29,7 @@ public class MatrixMultiplication {
 
   /**
    * Question 1.1 Returns the result of a sequential matrix multiplication The two matrices are
-   * randomly generated
+   * randomly generated.
    *
    * @param a is the first matrix
    * @param b is the second matrix
@@ -38,7 +38,7 @@ public class MatrixMultiplication {
   public static double[][] sequentialMultiplyMatrix(double[][] a, double[][] b) {
 
     // matrix to hold results
-    double matrix[][] = new double[MATRIX_SIZE][MATRIX_SIZE];
+    double[][] matrix = new double[MATRIX_SIZE][MATRIX_SIZE];
 
     for (int row = 0; row < MATRIX_SIZE; row++) {
       for (int col = 0; col < MATRIX_SIZE; col++) {
@@ -56,7 +56,7 @@ public class MatrixMultiplication {
 
   /**
    * Question 1.2 (Thread Pool) Returns the result of a concurrent matrix multiplication The two
-   * matrices are randomly generated
+   * matrices are randomly generated.
    *
    * @param a is the first matrix
    * @param b is the second matrix
@@ -106,7 +106,8 @@ public class MatrixMultiplication {
     public void run() {
 
       // for testing threads
-      // System.out.println("Processing row " + this.row + " on " + Thread.currentThread().getName());
+      // System.out.println("Processing row " + this.row + " on " +
+      // Thread.currentThread().getName());
 
       for (int col = 0; col < MATRIX_SIZE; col++) {
         // for the move accros the row and column
@@ -128,7 +129,7 @@ public class MatrixMultiplication {
    */
   private static double[][] generateRandomMatrix(int numRows, int numCols) {
 
-    double matrix[][] = new double[numRows][numCols];
+    double[][] matrix = new double[numRows][numCols];
 
     for (int row = 0; row < numRows; row++) {
       for (int col = 0; col < numCols; col++) {
@@ -141,7 +142,7 @@ public class MatrixMultiplication {
   // helper methods
 
   /**
-   * print any sized matrix to the screen
+   * Print any sized matrix to the screen.
    *
    * @param matrix is the printed matrix
    */
@@ -158,7 +159,7 @@ public class MatrixMultiplication {
   }
 
   /**
-   * Question 1.3 print time to execute sequential or parallel matrix multiplication
+   * Question 1.3 print time to execute sequential or parallel matrix multiplication.
    *
    * @param a first matrix
    * @param b second matrix
@@ -180,10 +181,8 @@ public class MatrixMultiplication {
       sequentialMultiplyMatrix(a, b);
       endTime = System.nanoTime();
 
-    }
-
-    // parallel matrix multiplication method is called instead
-    else {
+    } else {
+      // parallel matrix multiplication method is called instead
 
       // for printing
       methodName = "parallelMultiplyMatrix";
