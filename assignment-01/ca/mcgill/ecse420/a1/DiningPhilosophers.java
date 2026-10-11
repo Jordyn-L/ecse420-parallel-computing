@@ -15,7 +15,8 @@ public class DiningPhilosophers {
     // Each chopstick is represented by a ReentrantLock
     ReentrantLock[] chopsticks = new ReentrantLock[numberOfPhilosophers];
     for (int x = 0; x < numberOfPhilosophers; x++) {
-      chopsticks[x] = new ReentrantLock(true); // the true condition helps prevents starvation
+      chopsticks[x] =
+          new ReentrantLock(true); // the true condition helps prevents starvation in 3.2
     }
 
     // Left chopsticks are represented by y and right chopstick by y+1 modulo numberOfPhilosophers
@@ -51,6 +52,7 @@ public class DiningPhilosophers {
     @Override
     public void run() {
       // Odd philosophers acquire left first
+      // For 3.1 all philosophers acquired left first
       if (this.number % 2 == 1) {
         // Assuming the philosophers are eating from an infinite bowl of rice
         while (true) {
