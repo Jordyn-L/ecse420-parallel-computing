@@ -7,88 +7,100 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class DiningPhilosophers {
 
-	public static void main(String[] args) {
+  public static void main(String[] args) {
 
-//		Create single lock
-//		ReentrantLock chopstick = new ReentrantLock();
+    int numberOfPhilosophers = 5; // set number of philosophers
+    Philosopher[] philosophers = new Philosopher[numberOfPhilosophers];
 
-		int numberOfPhilosophers = 5;
-		Philosopher[] philosophers = new Philosopher[numberOfPhilosophers];
+    // Each chopstick is represented by a ReentrantLock
+    ReentrantLock[] chopsticks = new ReentrantLock[numberOfPhilosophers];
+    for (int x = 0; x < numberOfPhilosophers; x++) {
+      chopsticks[x] = new ReentrantLock(true); // the true condition helps prevents starvation
+    }
 
-		// Chopsticks
-		ReentrantLock[] chopsticks = new ReentrantLock[numberOfPhilosophers];
-		for (int x = 0; x<numberOfPhilosophers; x++) {
-			chopsticks[x] = new ReentrantLock(true);
-		}
+    // Left chopsticks are represented by y and right chopstick by y+1 modulo numberOfPhilosophers
+    for (int y = 0; y < numberOfPhilosophers; y++) {
+      ReentrantLock leftChopstick = chopsticks[y];
+      ReentrantLock rightChopstick =
+          (y == numberOfPhilosophers - 1) ? chopsticks[0] : chopsticks[y + 1];
+      philosophers[y] =
+          new Philosopher(
+              y + 1, leftChopstick, rightChopstick); // Philosopher numbering starts at 1
+    }
 
-		for (int y = 0; y<numberOfPhilosophers; y++) {
-			ReentrantLock left_chopstick = chopsticks[y];
-			ReentrantLock right_chopstick = (y == numberOfPhilosophers-1)? chopsticks[0] : chopsticks[y+1];
-			philosophers[y] = new Philosopher(y+1, left_chopstick, right_chopstick);
-		}
+    ExecutorService executor = Executors.newFixedThreadPool(numberOfPhilosophers);
 
-		ExecutorService executor = Executors.newFixedThreadPool(numberOfPhilosophers);
+    for (int z = 0; z < numberOfPhilosophers; z++) {
+      executor.execute(philosophers[z]);
+    }
+    executor.shutdown();
+  }
 
-		for (int z = 0; z<numberOfPhilosophers; z++) {
-			executor.execute(philosophers[z]);
-		}
-		executor.shutdown(); // not permanent
-	}
+  public static class Philosopher implements Runnable {
 
-	public static class Philosopher implements Runnable {
+    private int number;
+    private ReentrantLock leftChopstick;
+    private ReentrantLock rightChopstick;
 
-		private int number; // make private + setter??
-		private ReentrantLock left_chopstick;
-		private ReentrantLock right_chopstick;
+    public Philosopher(int number, ReentrantLock leftChopstick, ReentrantLock rightChopstick) {
+      this.number = number;
+      this.leftChopstick = leftChopstick;
+      this.rightChopstick = rightChopstick;
+    }
 
-		public Philosopher(int number, ReentrantLock left_chopstick, ReentrantLock right_chopstick){
-			this.number = number;
-			this.left_chopstick = left_chopstick;
-			this.right_chopstick = right_chopstick;
-		}
+    @Override
+    public void run() {
+      // Odd philosophers acquire left first
+      if (this.number % 2 == 1) {
+        // Assuming the philosophers are eating from an infinite bowl of rice
+        while (true) {
+          leftChopstick.lock();
+          try {
+            rightChopstick.lock();
+            try {
+              System.out.println("Yummy " + this.number + " is  eating");
+              TimeUnit.SECONDS.sleep(1);
+              System.out.println("Aaaaaah *belch* " + this.number + " is done eating");
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            } finally {
+              rightChopstick.unlock();
+            }
+          } finally {
+            leftChopstick.unlock();
+          }
 
-		@Override
-		public void run() {
-			// assuming the philosophers must eat continuously
-			if (this.number%2==1){
-				while (true){
-					left_chopstick.lock();
-					try{
-						right_chopstick.lock();
-						try{
-							System.out.println("Yummy "+ this.number +" is  eating");
-							TimeUnit.SECONDS.sleep(3);
-							System.out.println("Aaaaaah *burp* "+ this.number +" is done eating");
-						} catch (InterruptedException e) {
-							throw new RuntimeException(e);
-						} finally {
-							right_chopstick.unlock();
-						}
-					}finally {
-						left_chopstick.unlock();
-					}
-				}
-			}else{
-				while (true){
-					left_chopstick.lock();
-					try{
-						right_chopstick.lock();
-						try{
-							System.out.println("Yummy "+ this.number  +" is  eating");
-							TimeUnit.SECONDS.sleep(3);
-							System.out.println("Aaaaaah *burp* "+ this.number  +" is done eating");
-						} catch (InterruptedException e) {
-							throw new RuntimeException(e);
-						} finally {
-							right_chopstick.unlock();
-						}
-					}finally {
-						left_chopstick.unlock();
-					}
-				}
-			}
-		}
+          try {
+            TimeUnit.SECONDS.sleep(1); // represents the philosophers thinking
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      } else { // Even philosophers acquire right first
+        while (true) {
+          rightChopstick.lock();
+          try {
+            leftChopstick.lock();
+            try {
+              System.out.println("Yummy " + this.number + " is eating");
+              TimeUnit.SECONDS.sleep(1);
+              System.out.println("Aaaaaah *belch* " + this.number + " is done eating");
+            } catch (InterruptedException e) {
+              throw new RuntimeException(e);
+            } finally {
+              leftChopstick.unlock();
+            }
+          } finally {
+            rightChopstick.unlock();
+          }
 
-	}
-
+          try {
+            TimeUnit.SECONDS.sleep(1); // represents the philosophers thinking
+          } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+          }
+        }
+      }
+    }
+  }
 }
