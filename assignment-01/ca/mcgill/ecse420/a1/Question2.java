@@ -8,6 +8,7 @@ import java.util.concurrent.locks.ReentrantLock;
 /** Demonstrates deterministic deadlock caused when acquiring two locks in opposite orders. */
 public class Question2 {
 
+  // The CyclicBarrier is the source of the determinism
   private static final CyclicBarrier barrier = new CyclicBarrier(2);
 
   public static void main(String[] args) {
@@ -16,11 +17,14 @@ public class Question2 {
     ReentrantLock objectA = new ReentrantLock();
     ReentrantLock objectB = new ReentrantLock();
 
+    // Initialize 2 threads
     ExecutorService executor = Executors.newFixedThreadPool(2);
 
+    // Execute 2 threads
     executor.execute(new Hello(objectA, objectB));
     executor.execute(new Goodbye(objectA, objectB));
 
+    // Prevent future task from being added
     executor.shutdown();
   }
 
@@ -29,6 +33,7 @@ public class Question2 {
     ReentrantLock objectA;
     ReentrantLock objectB;
 
+    // Program run by first thread
     public Hello(ReentrantLock objectA, ReentrantLock objectB) {
       this.objectA = objectA;
       this.objectB = objectB;
@@ -36,7 +41,7 @@ public class Question2 {
 
     @Override
     public void run() {
-      objectA.lock();
+      objectA.lock(); // Hello requests objectA lock first
       System.out.println("Hello program, has acquire lock a!");
       try {
         try {
@@ -57,6 +62,7 @@ public class Question2 {
     }
   }
 
+  // Program run by second thread
   public static class Goodbye implements Runnable {
 
     ReentrantLock objectA;
@@ -69,7 +75,7 @@ public class Question2 {
 
     @Override
     public void run() {
-      objectB.lock();
+      objectB.lock(); // Goodbye requests objectB lock first
       System.out.println("Goodbye program, has acquire lock b!");
       try {
         try {
