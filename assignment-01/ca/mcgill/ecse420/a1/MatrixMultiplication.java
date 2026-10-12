@@ -6,22 +6,26 @@ import java.util.concurrent.Executors;
 public class MatrixMultiplication {
 
   private static final int NUMBER_THREADS = 8;
-  private static final int MATRIX_SIZE = 100;
+  private static final int MATRIX_SIZE = 4;
 
   public static void main(String[] args) {
 
     // Generate two random matrices, same size
     double[][] a = generateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE);
     double[][] b = generateRandomMatrix(MATRIX_SIZE, MATRIX_SIZE);
+    
+    // Question 1.1
+    // printMatrix(a);
+    // printMatrix(b);
+    // printMatrix(sequentialMultiplyMatrix(a, b));
 
     // Question 1.2
-
     // printMatrix(a);
     // printMatrix(b);
     // printMatrix(parallelMultiplyMatrix(a, b));
 
+    // Question 1.3
     // true is for sequential computation
-
     // executionTime(a, b, true);
     // executionTime(a, b, false);
 
